@@ -1,28 +1,40 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>YOS Taxi Dashboard</title>
-<style>
-body{
-    margin:0;
-    background:#111;
-    color:white;
-    font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
-}
-h1{
-    font-size:32px;
-}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0b0d" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="YOS Taxi" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./assets/taxi-icon.svg" type="image/svg+xml" />
+  <title>YOS Taxi Operations</title>
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
+<main class="app">
+  <header class="top"><div><p class="eyebrow">YOS TAXI OPERATIONS</p><h1>🚖 営業コントロール</h1></div><div class="clock"><strong id="clockTime">--:--</strong><span id="clockDate">----</span></div></header>
+  <section class="status" aria-live="polite"><div class="status-row"><div><div class="status-label">現在の状態</div><h2 id="statusTitle">営業前</h2><p id="statusDetail">安全確認をして営業を開始します。</p></div><span class="badge"><span class="dot" id="statusDot"></span><span id="statusBadge">準備</span></span></div></section>
+  <section class="kpis" aria-label="本日のKPI">
+    <div class="kpi"><strong id="salesKpi">¥0</strong><span>売上</span></div><div class="kpi"><strong id="ridesKpi">0</strong><span>乗車回数</span></div><div class="kpi"><strong id="avgKpi">¥0</strong><span>平均単価</span></div><div class="kpi"><strong id="hourlyKpi">¥0</strong><span>営業時給</span></div>
+  </section>
+  <section class="actions" aria-label="営業操作">
+    <button id="shiftButton" class="action primary">営業開始</button><button id="rideButton" class="action green">乗車</button><button id="dropoffButton" class="action primary">降車</button><button id="breakButton" class="action">休憩開始</button><button id="memoButton" class="action">メモ</button><button id="shareButton" class="action">YOSへ共有</button><button id="settingsButton" class="action">設定</button><button id="endButton" class="action red">営業終了</button>
+  </section>
+  <section class="panel"><div class="panel-head"><h3>今日の記録</h3><span id="eventCount" class="small">0件</span></div><div id="logList" class="log"></div></section>
+  <section class="panel"><div class="panel-head"><h3>データと司令室</h3><span class="small">既存資産を使用</span></div><div class="links"><a class="link" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/1-Fszb0ksSDX-3xKiZBN1yV710QJtKCBfpAqdE04Mw5k/edit">ProjectY運行データ</a><a class="link" target="_blank" rel="noopener" href="https://yskn0008-bot.github.io/ProjectY/">Mission Control</a><button id="csvButton" class="minor">CSV保存</button><button id="backupButton" class="minor">JSONバックアップ</button></div></section>
+  <button id="resetButton" class="danger-link">不具合時のみ：本日の状態を初期化</button>
+  <footer class="footer">端末内へ自動保存・オフライン対応・認証情報なし</footer>
+</main>
 
-<h1>🚖 YOS Taxi Dashboard</h1>
+<dialog id="rideDialog"><form method="dialog" class="dialog-body"><h3>乗車を記録</h3><p class="notice">運転中は安全最優先。入力は停車中に行ってください。</p><div class="fields"><div class="field"><label for="pickup">乗車地</label><input id="pickup" autocomplete="off" placeholder="例：松山1丁目" /></div><div class="field"><label for="dispatch">配車</label><select id="dispatch"><option value="流し">流し</option><option value="GO">GO</option><option value="DiDi">DiDi</option><option value="Uber">Uber</option><option value="付け待ち">付け待ち</option><option value="その他">その他</option></select></div><div class="field"><label for="rideMemo">メモ（任意）</label><input id="rideMemo" autocomplete="off" /></div></div><div class="dialog-actions"><button value="cancel">取消</button><button id="confirmRide" class="confirm" value="default">乗車開始</button></div></form></dialog>
 
+<dialog id="dropoffDialog"><form method="dialog" class="dialog-body"><h3>降車を記録</h3><div class="fields"><div class="field"><label for="dropoff">降車地</label><input id="dropoff" autocomplete="off" placeholder="例：那覇空港" /></div><div class="row2"><div class="field"><label for="fare">運賃（円）</label><input id="fare" type="number" min="0" step="100" inputmode="numeric" required /></div><div class="field"><label for="payment">支払方法</label><select id="payment"><option value="現金">現金</option><option value="クレジット">クレジット</option><option value="チケット">チケット</option><option value="障害者割">障害者割</option><option value="Uber">Uber</option><option value="未収">未収</option><option value="その他">その他</option></select></div></div><div class="row2"><div class="field"><label for="distance">実車距離 km（任意）</label><input id="distance" type="number" min="0" step="0.1" inputmode="decimal" /></div><div class="field"><label for="tip">チップ（任意）</label><input id="tip" type="number" min="0" step="100" inputmode="numeric" /></div></div><div class="field"><label for="dropMemo">メモ（任意）</label><textarea id="dropMemo"></textarea></div></div><div class="dialog-actions"><button value="cancel">取消</button><button id="confirmDropoff" class="confirm" value="default">降車完了</button></div></form></dialog>
+
+<dialog id="memoDialog"><form method="dialog" class="dialog-body"><h3>営業メモ</h3><div class="field"><label for="memoText">内容</label><textarea id="memoText" required placeholder="判断・違和感・学び"></textarea></div><div class="dialog-actions"><button value="cancel">取消</button><button id="confirmMemo" class="confirm" value="default">記録</button></div></form></dialog>
+
+<dialog id="settingsDialog"><form method="dialog" class="dialog-body"><h3>営業設定</h3><div class="fields"><div class="row2"><div class="field"><label for="targetSales">今日の目標（円）</label><input id="targetSales" type="number" min="0" step="1000" /></div><div class="field"><label for="vehicle">車両</label><input id="vehicle" inputmode="numeric" /></div></div><div class="row2"><div class="field"><label for="plannedStart">営業開始</label><input id="plannedStart" type="time" /></div><div class="field"><label for="plannedEnd">営業終了</label><input id="plannedEnd" type="time" /></div></div><div class="field"><label for="areas">営業エリア</label><input id="areas" /></div></div><div class="dialog-actions"><button value="cancel">取消</button><button id="saveSettings" class="confirm" value="default">保存</button></div></form></dialog>
+<script src="./app.js" defer></script>
 </body>
 </html>
