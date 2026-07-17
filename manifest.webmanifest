@@ -1,0 +1,14 @@
+{
+  "name": "YOS Taxi Operations",
+  "short_name": "YOS Taxi",
+  "description": "沖縄夜勤タクシー営業のワンタップ運用PWA",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#0b0b0d",
+  "orientation": "portrait-primary",
+  "icons": [
+    {"src":"./assets/taxi-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
